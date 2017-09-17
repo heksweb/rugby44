@@ -1,0 +1,53 @@
+web:
+  image: nginx:latest
+  restart: always
+  volumes:
+   - ./nginx/app.conf:/etc/nginx/conf.d/app.conf
+   - ./app/:/var/www/html/
+  ports:
+   - "80:80"
+  links:
+    - "php"
+
+php:
+  image: nanoninja/php-fpm
+  restart: always
+  volumes:
+     - ./app/:/var/www/html/
+     - ./php/php.ini:/usr/local/etc/php/php.ini
+  links:
+    - "mysqldb:mysql"
+
+composer:
+    image: composer:1.5
+    volumes:
+        - ./app/site/:/app/
+    command: composer install  
+
+myadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+        - "8080:80"
+    environment:
+        - PMA_ARBITRARY=1
+        - PMA_HOST=mysql
+    restart: always
+    links:
+      - "mysqldb"
+
+mysqldb:
+  image: heksweb/mysql:5.7
+  container_name: mysqldb
+  restart: always
+  ports:
+      - "3306:3306"
+  volumes:
+      - ./mysql/:/var/lib/mysql/
+      - ./dumps/:/var/dumps/
+  environment:
+      - MYSQL_DATABASE=rugby44
+      - MYSQL_ROOT_PASSWORD=am3512673
+      - MYSQL_USER=rugby44
+      - MYSQL_PASSWORD=qwerty
+
